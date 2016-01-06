@@ -8,7 +8,29 @@ class TestActivationFunctions(unittest.TestCase):
         test_data = np.array([[0], [-1], [0.5]])
         test_result = np.array([[0.5], [1 / (1 + np.exp(1))], [1 / (1 + np.exp(-0.5))]])
 
-        np.testing.assert_almost_equal(nw.sigmoid(test_data), test_result)
+        np.testing.assert_almost_equal(nw.sigmoid_fun(test_data), test_result)
+
+    def test_sigmoid_derivative(self):
+        test_data = np.array([[0], [-1], [0.5]])
+        test_result = np.array([[0.25], [np.exp(1) / ((1 + np.exp(1)) ** 2)], [np.exp(0.5) / ((1 + np.exp(0.5)) ** 2)]])
+
+        np.testing.assert_almost_equal(nw.sigmoid_derivative(test_data), test_result)
+
+
+class TestCostFunction(unittest.TestCase):
+    def test_squared_cost(self):
+        test_input = np.array([1, 0.5, -3, 2, 5])
+        test_results = np.array([0.5, 0, -2, -1, 5])
+        cost = 5.25
+
+        self.assertEqual(nw.squared_fun(test_input, test_results), cost)
+
+    def test_squared_cost_derivative(self):
+        test_input = np.array([1, 0.5, -3, 2, 5])
+        test_results = np.array([0.5, 0, -2, -1, 5])
+        derivative = np.array([0.5, 0.5, -1, 3, 0])
+
+        np.testing.assert_equal(nw.squared_derivative(test_input, test_results), derivative)
 
 
 class TestLayers(unittest.TestCase):
@@ -102,6 +124,21 @@ class TestLayers(unittest.TestCase):
         small_output = np.array([[0.5]])
 
         np.testing.assert_almost_equal(input_layer.feedforward(small_input), small_output)
+
+
+class TestNetwork(unittest.TestCase):
+    def test_initialization(self):
+        small_sizes = [2, 1]
+        big_sizes = [5, 10, 1, 30, 35]
+
+        small_network = nw.Network(small_sizes)
+        big_network = nw.Network(big_sizes)
+
+        for layer, size in enumerate(small_sizes):
+            self.assertEqual(small_network._layers[layer]._size, size)
+
+        for layer, size in enumerate(big_sizes):
+            self.assertEqual(big_network._layers[layer]._size, size)
 
 
 if __name__ == '__main__':
