@@ -48,8 +48,9 @@ class Network:
         self._output_layer.set_cost(sqared_cost)
 
     def _initialize_layers(self):
-        for layer in self._layers[1:]:
+        for layer in self._layers[1:-1]:
             layer.set_random_params()
+        self._output_layer.set_zero_params()
 
     def fit_sgd(self, training_data, epochs=1, batch_size=None, learning_rate=1):
         if batch_size is None:
@@ -98,8 +99,16 @@ class Layer:
         return self._weights
 
     def set_random_params(self):
-        biases = np.random.randn(self.get_size(), 1)
-        weights = np.random.randn(self.get_size(), self._previous_layer.get_size())
+        surrounding_sizes = self._previous_layer.get_size() + self._next_layer.get_size()
+        high = np.sqrt(6 / surrounding_sizes)
+        biases = np.random.uniform(low=-high, high=high, size=(self.get_size(), 1))
+        weights = np.random.uniform(low=-high, high=high, size=(self.get_size(), self._previous_layer.get_size()))
+        self.set_biases(biases)
+        self.set_weights(weights)
+
+    def set_zero_params(self):
+        biases = np.zeros((self.get_size(), 1))
+        weights = np.zeros((self.get_size(), self._previous_layer.get_size()))
         self.set_biases(biases)
         self.set_weights(weights)
 
