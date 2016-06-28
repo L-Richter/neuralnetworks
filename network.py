@@ -65,6 +65,9 @@ class Network:
     def feedforward(self, input_data):
         return self._input_layer.feedforward(input_data)
 
+    def get_delta(self, input_data):
+        return self._input_layer.get_delta(input_data)
+
 
 class Layer:
     def __init__(self, size, activation_function=sigmoid):
@@ -134,7 +137,7 @@ class Layer:
             delta_next = self._next_layer.forward_back_pass(activations, results, learning_rate)
             delta = np.dot(self._next_layer.get_weights().T, delta_next) *\
                 self._activation_function.der(zs)
-        self._tmp_w = learning_rate * delta * input_data.T
+        self._tmp_w = learning_rate * input_data.T * delta
         self._tmp_b = learning_rate * delta
         return delta
 
@@ -147,6 +150,12 @@ class Layer:
 
         if self._next_layer is not None:
             self._next_layer.update()
+
+    def reset_pass(self):
+        self._tmp_w = 0
+        self._tmp_b = 0
+        if self._next_layer is not None:
+            self._next_layer.reset_pass()
 
 
 class InputLayer:
@@ -167,3 +176,9 @@ class InputLayer:
         for input_data, results in data:
             self._next_layer.forward_back_pass(input_data, results, learning_rate / len(data))
         self._next_layer.update()
+
+    def get_delta(self, data):
+        for input_data, results in data:
+            delta = self._next_layer.forward_back_pass(input_data, results, 1) / len(data)
+        self._next_layer.reset_pass()
+        return np.dot(self._next_layer.get_weights().T, delta)
